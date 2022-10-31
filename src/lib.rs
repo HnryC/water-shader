@@ -15,7 +15,6 @@ struct State {
     background: defs::Background,
     sampler: wgpu::Sampler,
     water: defs::Water,
-    texture_bind_group_layout: wgpu::BindGroupLayout
 }
 
 impl State {
@@ -51,32 +50,6 @@ impl State {
         
         let diffuse_bytes = include_bytes!("top.jpg");
         let background_texture = defs::Texture::from_bytes(&device, &queue, diffuse_bytes, "top.jpg").unwrap();
-        let texture_bind_group_layout =
-            device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
-                label: Some("Texture Bind Group Layout"),
-                entries: &[
-                    wgpu::BindGroupLayoutEntry {
-                        binding: 0,
-                        visibility: wgpu::ShaderStages::FRAGMENT,
-                        ty: wgpu::BindingType::Texture {
-                            sample_type: wgpu::TextureSampleType::Float {
-                                filterable: true
-                            },
-                            view_dimension: wgpu::TextureViewDimension::D2,
-                            multisampled: false
-                        },
-                        count: None,
-                    },
-                    wgpu::BindGroupLayoutEntry {
-                        binding: 1,
-                        visibility: wgpu::ShaderStages::FRAGMENT,
-                        ty: wgpu::BindingType::Sampler(
-                            wgpu::SamplerBindingType::Filtering
-                            ),
-                            count: None,
-                    },
-                ]
-            });
 
         let shader = device.create_shader_module(include_wgsl!("shader.wgsl"));
         let background = defs::Background::new(background_texture, &device, &shader, adapter, &surface, size);
@@ -128,7 +101,6 @@ impl State {
             background,
             sampler,
             water,
-            texture_bind_group_layout,
         }
     }
 
@@ -156,11 +128,12 @@ impl State {
         });
 
         self.background.draw(&new, &self.device, &self.queue);
+        self.background.draw(&output.texture, &self.device, &self.queue);
 
 
-        let view = new.create_view(&wgpu::TextureViewDescriptor::default());
+        let view = output.texture.create_view(&wgpu::TextureViewDescriptor::default());
 
-        self.water.draw(&self.device, &view, &self.sampler, &self.queue);
+        self.water.draw(&self.device, &view, &self.sampler, &self.queue, &new);
 
 
         output.present();
@@ -201,7 +174,6 @@ pub async fn run() {
         }
 
         Event::RedrawRequested(window_id) if window_id == window.id() => {
-            // state.update();
             match state.render() {
                 Ok(_) => {}
                 // Reconfigure lost surface

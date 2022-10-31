@@ -1,5 +1,4 @@
 use image::GenericImageView;
-use rand::Rng;
 use anyhow::*;
 use wgpu::util::DeviceExt;
 use winit::dpi::PhysicalSize;
@@ -209,10 +208,10 @@ impl Background {
         );
 
         let vertices: &[Vertex] = &[
-            Vertex { position: [-1.0, 1.0, 0.0], tex_coords: [0.0, 0.0], seed: 0.0 },
-            Vertex { position: [1.0, 1.0, 0.0], tex_coords: [1.0, 0.0], seed: 0.0 },
-            Vertex { position: [-1.0, 0.0, 0.0], tex_coords: [0.0, 1.0], seed: 0.0 },
-            Vertex { position: [1.0, 0.0, 0.0], tex_coords: [1.0, 1.0], seed: 0.0 },
+            Vertex { position: [-1.0, 1.0, 0.0], tex_coords: [0.0, 0.0], seed: 0.4 },
+            Vertex { position: [1.0, 1.0, 0.0], tex_coords: [1.0, 0.0], seed: 2.0 },
+            Vertex { position: [-1.0, 0.0, 0.0], tex_coords: [0.0, 1.0], seed: 0.9 },
+            Vertex { position: [1.0, 0.0, 0.0], tex_coords: [1.0, 1.0], seed: 3.0 },
         ];
         let indices: &[u16] = &[
             2, 1, 0,
@@ -279,7 +278,12 @@ impl Background {
             }
         );
 
-        Background { vert_buf: vertex_buffer, index_buf: index_buffer, pipeline: render_pipeline, diffuse_bind_group }
+        Background {
+            vert_buf: vertex_buffer,
+            index_buf: index_buffer,
+            pipeline: render_pipeline,
+            diffuse_bind_group,
+        }
     }
 
     pub fn draw(&self, output: &wgpu::Texture, device: &wgpu::Device, queue: &wgpu::Queue) {
@@ -298,10 +302,10 @@ impl Background {
                         load: wgpu::LoadOp::Clear(wgpu::Color {
                             r: 0.0,
                             g: 0.0,
-                            b: 1.0,
-                            a: 1.0
+                            b: 0.3,
+                            a: 1.0,
                         }),
-                        store: true
+                        store: true,
                     }
                 })],
                 depth_stencil_attachment: None
@@ -325,6 +329,7 @@ pub struct Water {
     vertex_array: [Vertex; 4],
     render_pipeline: wgpu::RenderPipeline,
     texture_bind_group_layout: wgpu::BindGroupLayout,
+    time: std::time::SystemTime,
 }
 
 impl Water {
@@ -438,23 +443,27 @@ impl Water {
             vertex_array: vertices,
             render_pipeline,
             texture_bind_group_layout,
+            time: std::time::SystemTime::now(),
         }
     }
     
     fn regen(&mut self, device: &wgpu::Device) {
-        let seed = rand::thread_rng().gen_range(0.0..std::f32::consts::TAU);
         self.vertex_array =  [
-            Vertex { position: [-1.0, 0.0, 0.0], tex_coords: [0.0, 0.5], seed },
-            Vertex { position: [1.0, 0.0, 0.0], tex_coords: [1.0, 0.5], seed },
-            Vertex { position: [-1.0, -1.0, 0.0], tex_coords: [0.0, 0.0], seed },
-            Vertex { position: [1.0, -1.0, 0.0], tex_coords: [1.0, 0.0], seed },
+            Vertex { position: [-1.0, 0.0, 0.0], tex_coords: [0.0, 0.5], seed: self.time.elapsed().unwrap().as_secs_f32() },
+            Vertex { position: [1.0, 0.0, 0.0], tex_coords: [1.0, 0.5],  seed: self.time.elapsed().unwrap().as_secs_f32() },
+            Vertex { position: [-1.0, -1.0, 0.0], tex_coords: [0.0, 0.0],seed: self.time.elapsed().unwrap().as_secs_f32() },
+            Vertex { position: [1.0, -1.0, 0.0], tex_coords: [1.0, 0.0], seed: self.time.elapsed().unwrap().as_secs_f32() },
         ];
 
+        let x = (self.vertex_array[0].seed.sin() * 21.23).powi(5);
+        let y = (self.vertex_array[0].seed.cos() * 12.27).powi(5);
+        println!("{}", x - x.floor() + y - y.floor());
+
         self.vertex = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
-            label: Some("Vertex Buffer"),
+            label: Some("Vertex buffer"),
             contents: bytemuck::cast_slice(&self.vertex_array),
             usage: wgpu::BufferUsages::VERTEX,
-        });
+        })
     }
 
     pub fn draw(
@@ -462,7 +471,8 @@ impl Water {
             device: &wgpu::Device,
             view: &wgpu::TextureView,
             sampler: &wgpu::Sampler,
-            queue: &wgpu::Queue
+            queue: &wgpu::Queue,
+            input: &wgpu::Texture,
         ) {
         self.regen(device);
 
@@ -478,7 +488,9 @@ impl Water {
                 entries: &[
                     wgpu::BindGroupEntry {
                         binding: 0,
-                        resource: wgpu::BindingResource::TextureView(&view)
+                        resource: wgpu::BindingResource::TextureView(&input.create_view(
+                                    &wgpu::TextureViewDescriptor::default() 
+                                ))
                     },
                     wgpu::BindGroupEntry {
                         binding: 1,
