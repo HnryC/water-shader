@@ -208,10 +208,10 @@ impl Background {
         );
 
         let vertices: &[Vertex] = &[
-            Vertex { position: [-1.0, 1.0, 0.0], tex_coords: [0.0, 0.0], seed: 1.4 },
-            Vertex { position: [1.0, 1.0, 0.0], tex_coords: [1.0, 0.0], seed: 2.9 },
-            Vertex { position: [-1.0, -0.005, 0.0], tex_coords: [0.0, 1.0], seed: 9.9 },
-            Vertex { position: [1.0, -0.005, 0.0], tex_coords: [1.0, 1.0], seed: 0.0 },
+            Vertex { position: [-1.0, 1.0, 1.0], tex_coords: [0.0, 0.0], seed: 1.4 },
+            Vertex { position: [1.0, 1.0, 1.0], tex_coords: [1.0, 0.0], seed: 2.9 },
+            Vertex { position: [-1.0, -0.005, 1.0], tex_coords: [0.0, 1.0], seed: 9.9 },
+            Vertex { position: [1.0, -0.005, 1.0], tex_coords: [1.0, 1.0], seed: 0.0 },
         ];
         let indices: &[u16] = &[
             2, 1, 0,
