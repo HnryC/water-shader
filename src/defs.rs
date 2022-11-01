@@ -208,10 +208,10 @@ impl Background {
         );
 
         let vertices: &[Vertex] = &[
-            Vertex { position: [-1.0, 1.0, 0.0], tex_coords: [0.0, 0.0], seed: 0.4 },
-            Vertex { position: [1.0, 1.0, 0.0], tex_coords: [1.0, 0.0], seed: 2.0 },
-            Vertex { position: [-1.0, 0.0, 0.0], tex_coords: [0.0, 1.0], seed: 0.9 },
-            Vertex { position: [1.0, 0.0, 0.0], tex_coords: [1.0, 1.0], seed: 3.0 },
+            Vertex { position: [-1.0, 1.0, 0.0], tex_coords: [0.0, 0.0], seed: 1.4 },
+            Vertex { position: [1.0, 1.0, 0.0], tex_coords: [1.0, 0.0], seed: 2.9 },
+            Vertex { position: [-1.0, -0.005, 0.0], tex_coords: [0.0, 1.0], seed: 9.9 },
+            Vertex { position: [1.0, -0.005, 0.0], tex_coords: [1.0, 1.0], seed: 0.0 },
         ];
         let indices: &[u16] = &[
             2, 1, 0,
@@ -299,12 +299,7 @@ impl Background {
                     view: &view,
                     resolve_target: None,
                     ops: wgpu::Operations {
-                        load: wgpu::LoadOp::Clear(wgpu::Color {
-                            r: 0.0,
-                            g: 0.0,
-                            b: 0.3,
-                            a: 1.0,
-                        }),
+                        load: wgpu::LoadOp::Load,
                         store: true,
                     }
                 })],
@@ -341,8 +336,8 @@ impl Water {
 
         ) -> Self {
         let vertices: [Vertex; 4] = [
-            Vertex { position: [-1.0, 0.0, 0.0], tex_coords: [0.0, 0.5], seed: 0.0 },
-            Vertex { position: [1.0, 0.0, 0.0], tex_coords: [1.0, 0.5], seed: 0.0 },
+            Vertex { position: [-1.0, -0.005, 0.0], tex_coords: [0.0, 0.5], seed: 0.0 },
+            Vertex { position: [1.0, -0.005, 0.0], tex_coords: [1.0, 0.5], seed: 0.0 },
             Vertex { position: [-1.0, -1.0, 0.0], tex_coords: [0.0, 0.0], seed: 0.0 },
             Vertex { position: [1.0, -1.0, 0.0], tex_coords: [1.0, 0.0], seed: 0.0 },
         ];
@@ -448,16 +443,14 @@ impl Water {
     }
     
     fn regen(&mut self, device: &wgpu::Device) {
-        self.vertex_array =  [
-            Vertex { position: [-1.0, 0.0, 0.0], tex_coords: [0.0, 0.5], seed: self.time.elapsed().unwrap().as_secs_f32() },
-            Vertex { position: [1.0, 0.0, 0.0], tex_coords: [1.0, 0.5],  seed: self.time.elapsed().unwrap().as_secs_f32() },
-            Vertex { position: [-1.0, -1.0, 0.0], tex_coords: [0.0, 0.0],seed: self.time.elapsed().unwrap().as_secs_f32() },
-            Vertex { position: [1.0, -1.0, 0.0], tex_coords: [1.0, 0.0], seed: self.time.elapsed().unwrap().as_secs_f32() },
-        ];
+        let seed = self.time.elapsed().unwrap().as_secs_f32();
 
-        let x = (self.vertex_array[0].seed.sin() * 21.23).powi(5);
-        let y = (self.vertex_array[0].seed.cos() * 12.27).powi(5);
-        println!("{}", x - x.floor() + y - y.floor());
+        self.vertex_array =  [
+            Vertex { position: [-1.0, 0.0, 0.0], tex_coords: [0.0, 0.5], seed },
+            Vertex { position: [1.0, 0.0, 0.0], tex_coords: [1.0, 0.5],  seed },
+            Vertex { position: [-1.0, -1.0, 0.0], tex_coords: [0.0, 0.0],seed },
+            Vertex { position: [1.0, -1.0, 0.0], tex_coords: [1.0, 0.0], seed },
+        ];
 
         self.vertex = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
             label: Some("Vertex buffer"),
