@@ -405,6 +405,7 @@ impl Water {
             },
             multiview: None
         });
+
         let texture_bind_group_layout =
             device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
                 label: Some("texture bind group layout"),

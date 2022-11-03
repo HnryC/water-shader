@@ -46,7 +46,7 @@ fn noise(tex_coords: vec2<f32>) -> f32 {
     let c = rand(i + vec2<f32>(0.0, 1.0));
     let d = rand(i + vec2<f32>(1.0, 1.0));
 
-    let u = f*f*(3.0 - 2.0 * f);
+    let u = f*f*f*(f*(f*6.0 - 15.)+10.);
     return mix(a, b, u.x) + (c - a)* u.y * (1.0 - u.x) + (d - b) * u.x * u.y;
 }
 
@@ -54,6 +54,7 @@ fn noise(tex_coords: vec2<f32>) -> f32 {
 fn fs_main_water(in: VertexOutput) -> @location(0) vec4<f32> {
 //  let random = noise(vec2<f32>(in.time * 30.0 + in.tex_coords.x, in.time * 33.3 + in.tex_coords.y));
 //  return vec4<f32>(random, random, random, 1.0);
-    let random = (noise(vec2<f32>(in.time + in.tex_coords.x, in.time + in.tex_coords.y)) - 0.5) * 0.01;
+    let random = (noise(vec2<f32>(in.time + in.tex_coords.x, in.time + in.tex_coords.y)) - 0.5) * 0.01 * clamp((in.tex_coords.y - 0.5) * -8.0, 0.0, 1.0);
     return textureSample(t_diffuse, s_diffuse, vec2<f32>(clamp(in.tex_coords.x + random, 0.0, 1.0), clamp(in.tex_coords.y + random, 0.0, 0.5)));
+//  return textureSample(t_diffuse, s_diffuse, vec2<f32>(clamp(in.tex_coords.x + random, 0.0, 1.0), in.tex_coords.y));
 }
