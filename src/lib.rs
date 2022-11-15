@@ -19,6 +19,12 @@ struct State {
 }
 
 impl State {
+    /// Initialises handler of state based off winit window
+    ///
+    /// # Example
+    /// ```
+    /// let state = State::new(&window);
+    /// ```
     async fn new(window: &Window) -> Self {
         let size = window.inner_size();
 
@@ -116,7 +122,12 @@ impl State {
         }
     }
 
-    // Updates internal size when window is resized
+    /// Updates internal size when window is resized
+    ///
+    /// # Example
+    /// ```
+    /// state.resize(window.inner_size)
+    /// ```
     fn resize(&mut self, new_size: winit::dpi::PhysicalSize<u32>) {
         if new_size.height == 0 || new_size.width == 0 {
             return;
@@ -128,6 +139,13 @@ impl State {
         self.surface.configure(&self.device, &self.config);
     }
 
+    /// Render logic for States subcomponents
+    /// Currently draws water effect for the supplied texture
+    ///
+    /// # Example
+    /// ```
+    /// state.render();
+    /// ```
     fn render(&mut self) -> Result<(), wgpu::SurfaceError> {
         // Create output texture for rendering
         let output = self.surface.get_current_texture()?;
@@ -171,6 +189,7 @@ impl State {
     }
 }
 
+/// Event loop for water shader program
 pub async fn run() {
     // Without env_logger wgpu errors are not useful
     env_logger::init();

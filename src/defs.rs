@@ -5,6 +5,7 @@ use winit::dpi::PhysicalSize;
 
 #[repr(C)]
 #[derive(Copy, Clone, Debug, bytemuck::Pod, bytemuck::Zeroable)]
+/// Structure that contains vertex data for wgpu
 pub struct Vertex {
     pub position: [f32; 3],
     pub tex_coords: [f32; 2],
@@ -12,6 +13,7 @@ pub struct Vertex {
 }
 
 impl Vertex {
+    ///Return a buffer layout corresponding to the Vertex struct
     pub fn desc<'a>() -> wgpu::VertexBufferLayout<'a> {
         wgpu::VertexBufferLayout {
             array_stride: std::mem::size_of::<Vertex>() as wgpu::BufferAddress,
